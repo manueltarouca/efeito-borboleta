@@ -1,0 +1,1 @@
+export const FEED_URL = 'https://www.rtp.pt/play/podcast/9832';

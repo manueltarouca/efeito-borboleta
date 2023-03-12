@@ -1,31 +1,37 @@
 import axios, { AxiosResponse } from 'axios';
 import Parser from 'rss-parser';
-import fs, { ReadStream, WriteStream } from 'fs';
+import { ReadStream } from 'fs';
+import { Entry } from './models';
+import { downloadFeedItem, executeWhisper, ffmpegConvert, spawnDependencies } from './utils';
+import { FEED_URL } from './constants';
+import * as dotenv from 'dotenv'
+import { readCache, saveCache } from './cache';
 
-const parser = new Parser();
+dotenv.config();
 
 (async () => {
-  const feed = await parser.parseURL('https://www.rtp.pt/play/podcast/9832');
+  spawnDependencies();
+  const cache = readCache();
+  const parser = new Parser();
+  const feed = await parser.parseURL(FEED_URL);
   console.log(feed.title);
-  const entries = feed.items.map(item => {
+  const entries: Entry[] = feed.items.map(item => {
     return {
       url: item.enclosure?.url as string,
       name: item.title?.toLowerCase().trim().split(' ').join('-') as string
     }
-  });
-  console.log(entries)
-  for (const entry of entries) {
+  }).reverse().slice(0, 1);
+  const notCached = entries.filter(entry => !(cache.map(cacheEntry => cacheEntry.entry.name).includes(entry.name)));
+  const cached = entries.filter(entry => cache.map(cacheEntry => cacheEntry.entry.name).includes(entry.name));
+  console.log(`Total entries [${entries.length}]`);
+  console.log(`Cached entries [${cached.length}]`);
+  console.log(`Not cached entries [${notCached.length}]`);
+  for (const entry of notCached) {
     const response: AxiosResponse<ReadStream> = await axios.get(entry.url, { responseType: 'stream' });
-    await new Promise<void>((resolve, reject) => {
-      const writeStream: WriteStream = fs.createWriteStream(`./data/${entry.name}.mp3`);
-      response.data.pipe(writeStream);
-      writeStream.on('finish', () => {
-        console.log(`File downloaded to ${entry.name}.mp3`);
-        resolve();
-      });
-      writeStream.on('error', (error) => {
-        reject(error);
-      });
-    });
+    await downloadFeedItem(response, entry);
+    const output = await ffmpegConvert(entry);
+    await executeWhisper(output);
+    cache.push({ path: output, entry })
   }
-})();
+  saveCache(cache);
+})().finally(() => console.log('All good 😀'));
