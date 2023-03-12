@@ -35,7 +35,7 @@ export function ffmpegConvert(entry: Entry) {
 
 export function executeWhisper(entry: string) {
   return new Promise<void>((resolve, reject) => {
-    const execution = exec(`whisperx --model large-v2 --language pt ${entry} --hf_token "${process.env.HF_TOKEN}"`);
+    const execution = exec(`whisperx --model large-v2 --language pt --diarize --hf_token "${process.env.HF_TOKEN}" --output_dir "./data/output" ${entry}`);
     execution.on('close', () => {
       console.log(`Transcription done on ${entry}`);
       resolve();
@@ -53,4 +53,5 @@ export function executeWhisper(entry: string) {
 
 export function spawnDependencies() {
   fs.mkdirSync('./data/cache', { recursive: true });
+  fs.mkdirSync('./data/output', { recursive: true });
 }
