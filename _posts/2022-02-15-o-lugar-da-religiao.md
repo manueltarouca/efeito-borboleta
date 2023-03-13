@@ -6,7 +6,7 @@ title: O Lugar da Religião
 <div class="message">
   Mas, afinal, pode-se ou não ser católico sem se ser crente? E muçulmano? E judeu? Que espécies de religiões são as de hoje? E para que servem?
 </div>
-<div>
+{% raw %}
 [Voice-over]: Efeito borboleta.
 [Voice-over]: Mas, afinal, pode-se ou não ser católico sem se ser crente?
 [Voice-over]: E muçulmano? E judeu?
@@ -357,7 +357,10 @@ title: O Lugar da Religião
 [Johnny Cash]: But I know that you've got your reasons
 [Johnny Cash]: These things that are pleasing you
 [Johnny Cash]: can hurt you somehow.
-</div>
+{% endraw %}
+
 -----
 
-[^fn-sample_footnote]: https://www.rtp.pt/play/p9832/e598938/efeito-borboleta
+## Referências
+
+[1]: https://www.rtp.pt/play/p9832/e598938/efeito-borboleta
